@@ -1,15 +1,27 @@
 {
-  "name": "nodejs",
+  "name": "@cassidy/utils",
   "version": "1.0.0",
-  "description": "",
+  "description": "Utility functions for Cassidy Facebook bot, including inventory and collectibles management, with more features to come.",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "types": "index.d.ts",
+  "type": "commonjs",
+  "exports": {
+    ".": "./index.js"
   },
-  "keywords": [],
-  "author": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "build": "tsc"
+  },
+  "keywords": [
+    "facebook",
+    "bot",
+    "inventory",
+    "collectibles",
+    "management",
+    "utils"
+  ],
+  "author": "Nealiana Kaye Cagara (Liane Cagara)",
   "license": "ISC",
-  "dependencies": {
-    "@types/node": "^18.0.6"
-  }
+  "dependencies": {}
 }
