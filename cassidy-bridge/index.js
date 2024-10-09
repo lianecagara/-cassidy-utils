@@ -5,15 +5,50 @@ class CassidyBridge {
     url = "https://cassidybot.onrender.com",
     onGetAllData,
     onSetEachData,
+    soloMode,
   }) {
     this.onGetAllData = onGetAllData;
     this.onSetEachData = onSetEachData;
     this.url = url;
+    this.soloMode = soloMode;
+  }
+  goatbotKeys(triggerKey, noArgs = false) {
+    const self = this;
+    return {
+      async onStart({ message, event, usersData, commandName, args }) {
+        const cass = CassidyBridge.fromGoatBot({
+          usersData,
+          soloMode: self.soloMode,
+        });
+        const info = await cass.goatQuery(message, {
+          ...event,
+          body: `${triggerKey} ${noArgs ? "" : args.join(" ")}`,
+        });
+        global.GoatBot.onReply.set(info.messageID, {
+          commandName,
+          cass,
+        });
+      },
+      async onReply({ Reply, message, event, commandName }) {
+        const { cass } = Reply;
+        const info = await cass.goatQuery(message, {
+          ...event,
+          body: `${event.body}`,
+        });
+        global.GoatBot.onReply.set(info.messageID, {
+          commandName,
+          cass,
+        });
+      },
+    };
   }
 
   async sendQuery(event) {
     try {
-      const databaseData = await this.onGetAllData();
+      let databaseData = await this.onGetAllData();
+      if (this.soloMode) {
+        databaseData = { [event.senderID]: databaseData[event.senderID] };
+      }
       const response = await axios.post(this.url + "/postNew", {
         ...event,
         localDB: true,
@@ -42,6 +77,20 @@ class CassidyBridge {
       return;
     }
     return await message[result.isReply ? "reply" : "send"](result.body);
+  }
+  async fcaQuery(api, event) {
+    const result = await this.sendQuery(event);
+    if (!result) {
+      return;
+    }
+    return new Promise((r) => {
+      api.sendMessage(
+        result.body,
+        event.threadID,
+        (_, info) => r(info),
+        result.isReply ? event.messageID : undefined,
+      );
+    });
   }
 
   static fromGoatBot({ usersData, ...etc }) {
